@@ -154,7 +154,8 @@ function line(r: CaseResult): string {
   const wrong = bad.some((s) => s.outcome === "unsafe_clear" || s.outcome === "false_alarm" || s.outcome === "not_selected" || s.outcome === "error");
   const mark = bad.length === 0 ? green("✓") : wrong ? red("✗") : yellow("○");
   const target = r.checks.find((s) => s.label === "violated");
-  const head = target ? `${target.check.split("/")[1]} ${target.outcome}` : `${r.checks.length} checks cleared`;
+  const cleared = r.checks.filter((s) => s.outcome === "cleared").length;
+  const head = target ? `${target.check.split("/")[1]} ${target.outcome}` : `${cleared}/${r.checks.length} checks cleared`;
   const misses = bad.filter((s) => s !== target).map((s) => `${s.check.split("/")[1]} ${s.outcome}`);
   return `${mark} ${r.id}  ${r.kind.padEnd(10)} ${pct}  ${head}${misses.length ? dim("  · " + misses.join(", ")) : ""} ${time}`;
 }
