@@ -6,9 +6,10 @@
     "node": ">=26"
   },
   "scripts": {
-    "eval": "node harness/eval.ts",
     "validate": "node harness/validate.ts",
-    "oracle": "vitest run --config vitest.config.ts"
+    "eval": "node harness/eval.ts",
+    "oracle": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.oracle.json"
   },
   "devDependencies": {
     "@types/node": "26.6.3",

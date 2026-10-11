@@ -1,6 +1,6 @@
 // Runs Sure on each case in an isolated copy, scores its verdicts against the
 // frozen labels, and writes raw results under results/<timestamp>/.
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import {
@@ -8,6 +8,7 @@ import {
   ROOT,
   caseHash,
   cleanup,
+  loadChecks,
   dim,
   green,
   loadCases,
@@ -36,20 +37,10 @@ const { values } = parseArgs({
 
 const ids = values.case?.split(",").map((s) => s.trim());
 
-// requirements maps each check ID to its contract text, for the ad-hoc track:
-// the same expectations passed with --expect, reading only the changed files.
-const requirements: Record<string, string> = {};
-for (const f of readdirSync(join(APP, ".sure", "contracts"))) {
-  const text = readFileSync(join(APP, ".sure", "contracts", f), "utf8");
-  const id = /^id: (\S+)$/m.exec(text)?.[1];
-  for (const section of text.split(/\n(?=## )/)) {
-    const m = /^## (\S+) — [^\n]*\n([\s\S]*)$/.exec(section);
-    if (m) requirements[`${id}/${m[1]}`] = m[2].trim().replace(/\s+/g, " ");
-  }
-}
-for (const [id, text] of Object.entries(requirements)) {
-  if (!/[.!?]$/.test(text)) throw new Error(`requirement ${id} was not read completely: "${text}"`);
-}
+// The ad-hoc track passes each labeled check's requirement with --expect to
+// a candidate that has no contracts, so Sure reads the changed files plus their
+// imports and importers instead of the contracts' scopes.
+const checkInfo = loadChecks();
 const contractFiles = readdirSync(join(APP, ".sure", "contracts")).map((f) => ({ file: `.sure/contracts/${f}`, delete: true as const }));
 const cases = loadCases((c) => (ids ? ids.includes(c.id) : values.split === "all" || c.split === values.split));
 if (cases.length === 0) {
@@ -60,6 +51,7 @@ if (cases.length === 0) {
 type CheckScore = { check: string; label: string; verdict: string; confidence: number | null; outcome: string };
 type CaseResult = {
   id: string;
+  model: string | null;
   split: string;
   kind: string;
   hash: string;
@@ -120,7 +112,7 @@ function assert(c: Case, json: any, exit: number): { name: string; ok: boolean; 
 }
 
 async function evaluate(c: Case): Promise<CaseResult> {
-  const result: CaseResult = { id: c.id, split: c.split, kind: c.kind, hash: caseHash(c), exit: -1, ms: 0, confidence: null, checks: [], assertions: [] };
+  const result: CaseResult = { id: c.id, model: null, split: c.split, kind: c.kind, hash: caseHash(c), exit: -1, ms: 0, confidence: null, checks: [], assertions: [] };
   let dir = "";
   try {
     const adhocTrack = values.adhoc && (c.kind === "violation" || c.kind === "safe");
@@ -129,7 +121,7 @@ async function evaluate(c: Case): Promise<CaseResult> {
     await writeVisualManifest(dir, c);
     const args = [...(c.args ?? [])];
     if (adhocTrack) {
-      for (const id of labelIds) args.push("--expect", requirements[id]);
+      for (const id of labelIds) args.push("--expect", checkInfo.get(id)!.requirement);
     }
     if (values.provider) args.push("--provider", values.provider);
     if (values["no-cache"]) args.push("--no-cache");
@@ -142,12 +134,15 @@ async function evaluate(c: Case): Promise<CaseResult> {
     }
     writeFileSync(join(rawDir, `${c.id}.json`), JSON.stringify(sure.json, null, 2));
     result.confidence = sure.json.confidence?.probability ?? null;
+    result.model = sure.json.provider?.returned_models?.[0] ?? null;
     if (sure.json.status === "failed" && (c.kind === "violation" || c.kind === "safe")) {
       result.error = (sure.json.errors ?? []).map((e: any) => `${e.code}: ${e.message}`).join("; ");
     }
     const byId: Record<string, any> = Object.fromEntries((sure.json.checks ?? []).map((ch: any) => [ch.id, ch]));
     if (adhocTrack) {
-      labelIds.forEach((id, i) => (byId[id] = byId[`adhoc/ADHOC-${String(i + 1).padStart(3, "0")}`]));
+      for (const id of labelIds) {
+        byId[id] = (sure.json.checks ?? []).find((ch: any) => ch.contract === "adhoc" && ch.requirement === checkInfo.get(id)!.requirement);
+      }
     }
     for (const [check, label] of Object.entries(c.labels ?? {})) {
       const ch = byId[check];
@@ -209,8 +204,10 @@ const assertions = results.flatMap((r) => r.assertions);
 const times = results.map((r) => r.ms).sort((a, b) => a - b);
 const summary = {
   run: stamp,
-  split: values.split,
+  track: values.adhoc ? "adhoc" : "contracts",
+  split: ids ? `cases ${ids.join(",")}` : values.split,
   provider: values.provider ?? "config",
+  models: [...new Set(results.map((r) => r.model).filter(Boolean))],
   cases: results.length,
   checks: {
     labeled_violations: violations,

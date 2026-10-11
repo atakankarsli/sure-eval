@@ -41,6 +41,28 @@ export type Expectation = {
   endpoint_unchanged?: boolean;
 };
 
+export type CheckInfo = { id: string; contract: string; local: string; requirement: string };
+
+// loadChecks reads the accepted contracts: every check's full ID and its
+// requirement text with line breaks folded.
+export function loadChecks(): Map<string, CheckInfo> {
+  const dir = join(APP, ".sure", "contracts");
+  const out = new Map<string, CheckInfo>();
+  for (const f of readdirSync(dir).sort()) {
+    const text = readFileSync(join(dir, f), "utf8");
+    const contract = /^id: (\S+)$/m.exec(text)?.[1];
+    if (!contract) throw new Error(`${f}: no contract id`);
+    for (const section of text.split(/\n(?=## )/)) {
+      const m = /^## (\S+) — [^\n]*\n([\s\S]*)$/.exec(section);
+      if (!m) continue;
+      const requirement = m[2].trim().replace(/\s+/g, " ");
+      if (!/[.!?]$/.test(requirement)) throw new Error(`${f}: ${m[1]} was not read completely`);
+      out.set(`${contract}/${m[1]}`, { id: `${contract}/${m[1]}`, contract, local: m[1], requirement });
+    }
+  }
+  return out;
+}
+
 export function loadCases(filter?: (c: Case) => boolean): Case[] {
   const dir = join(ROOT, "cases");
   return readdirSync(dir)
@@ -119,12 +141,9 @@ export function cleanup(dir: string): void {
 }
 
 export function sureBin(): string {
-  const fromEnv = process.env.SURE_BIN;
-  if (fromEnv) return fromEnv;
-  for (const candidate of [join(ROOT, "..", "sure", "sure"), join(ROOT, "..", "sure", "worktrees", "v0", "sure")]) {
-    if (existsSync(candidate)) return candidate;
-  }
-  throw new Error("Sure binary not found: build it (cd ../sure && make build) or set SURE_BIN");
+  const bin = process.env.SURE_BIN ?? join(ROOT, "..", "sure", "sure");
+  if (!existsSync(bin)) throw new Error(`Sure binary not found at ${bin}: build it (cd ../sure && make build) or set SURE_BIN`);
+  return bin;
 }
 
 export type SureResult = { exitCode: number; json: any; stderr: string; ms: number };
@@ -181,13 +200,8 @@ export async function writeVisualManifest(dir: string, c: Case): Promise<void> {
 
 export type OracleResult = { failing: Set<string>; baselineFailing: string[]; total: number; error?: string };
 
-const CHECK_PREFIX = /^((?:CHK|CAT|CART|ORD)-\d+)\b/;
-const CONTRACT_OF: Record<string, string> = { CHK: "checkout.failure", CAT: "catalog.query", CART: "cart.lines", ORD: "orders.validation" };
-
-export function checkIdFor(local: string): string {
-  if (local === "CHK-004") return "checkout.pending/CHK-004";
-  return `${CONTRACT_OF[local.split("-")[0]]}/${local}`;
-}
+const CHECK_PREFIX = /^([A-Z][A-Z0-9]*-\d+)\b/;
+const byLocal = new Map([...loadChecks().values()].map((c) => [c.local, c.id]));
 
 // runOracle runs the independent Vitest expectations against a candidate and
 // returns the check IDs whose behavior fails.
@@ -214,7 +228,8 @@ export async function runOracle(dir: string): Promise<OracleResult> {
       total++;
       if (t.status === "passed") continue;
       const m = CHECK_PREFIX.exec(t.title);
-      if (m) failing.add(checkIdFor(m[1]));
+      const id = m ? byLocal.get(m[1]) : undefined;
+      if (id) failing.add(id);
       else baselineFailing.push(t.title);
     }
   }
