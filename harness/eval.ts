@@ -1,9 +1,10 @@
 // Runs Sure on each case in an isolated copy, scores its verdicts against the
 // frozen labels, and writes raw results under results/<timestamp>/.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import {
+  APP,
   ROOT,
   caseHash,
   cleanup,
@@ -28,11 +29,24 @@ const { values } = parseArgs({
     "no-cache": { type: "boolean", default: false },
     concurrency: { type: "string", default: "4" },
     oracle: { type: "boolean", default: false },
+    adhoc: { type: "boolean", default: false },
     json: { type: "boolean", default: false },
   },
 });
 
 const ids = values.case?.split(",").map((s) => s.trim());
+
+// requirements maps each check ID to its contract text, for the ad-hoc track:
+// the same expectations passed with --expect, reading only the changed files.
+const requirements: Record<string, string> = {};
+for (const f of readdirSync(join(APP, ".sure", "contracts"))) {
+  const text = readFileSync(join(APP, ".sure", "contracts", f), "utf8");
+  const id = /^id: (\S+)$/m.exec(text)?.[1];
+  for (const m of text.matchAll(/^## (\S+) — .*\n([\s\S]*?)(?=\n## |$)/gm)) {
+    requirements[`${id}/${m[1]}`] = m[2].trim().replace(/\s+/g, " ");
+  }
+}
+const contractFiles = readdirSync(join(APP, ".sure", "contracts")).map((f) => ({ file: `.sure/contracts/${f}`, delete: true as const }));
 const cases = loadCases((c) => (ids ? ids.includes(c.id) : values.split === "all" || c.split === values.split));
 if (cases.length === 0) {
   console.error(`No cases match. Use --split dev|holdout|software|all or --case C001,C002.`);
@@ -105,9 +119,14 @@ async function evaluate(c: Case): Promise<CaseResult> {
   const result: CaseResult = { id: c.id, split: c.split, kind: c.kind, hash: caseHash(c), exit: -1, ms: 0, confidence: null, checks: [], assertions: [] };
   let dir = "";
   try {
-    dir = await materialize(c);
+    const adhocTrack = values.adhoc && (c.kind === "violation" || c.kind === "safe");
+    const labelIds = Object.keys(c.labels ?? {});
+    dir = await materialize(adhocTrack ? { ...c, baseline_edits: [...(c.baseline_edits ?? []), ...contractFiles] } : c);
     await writeVisualManifest(dir, c);
     const args = [...(c.args ?? [])];
+    if (adhocTrack) {
+      for (const id of labelIds) args.push("--expect", requirements[id]);
+    }
     if (values.provider) args.push("--provider", values.provider);
     if (values["no-cache"]) args.push("--no-cache");
     const sure = await runSure(dir, args);
@@ -123,6 +142,9 @@ async function evaluate(c: Case): Promise<CaseResult> {
       result.error = (sure.json.errors ?? []).map((e: any) => `${e.code}: ${e.message}`).join("; ");
     }
     const byId: Record<string, any> = Object.fromEntries((sure.json.checks ?? []).map((ch: any) => [ch.id, ch]));
+    if (adhocTrack) {
+      labelIds.forEach((id, i) => (byId[id] = byId[`adhoc/ADHOC-${String(i + 1).padStart(3, "0")}`]));
+    }
     for (const [check, label] of Object.entries(c.labels ?? {})) {
       const ch = byId[check];
       const verdict = ch?.verdict ?? "missing";
@@ -166,7 +188,7 @@ const rawDir = join(outDir, "raw");
 mkdirSync(rawDir, { recursive: true });
 
 const started = performance.now();
-if (!values.json) console.log(`${dim("EVAL")} ${values.split}${ids ? ` (${ids.join(",")})` : ""} · ${cases.length} cases${values.provider ? ` · ${values.provider}` : ""}\n`);
+if (!values.json) console.log(`${dim("EVAL")}${values.adhoc ? " ad-hoc" : ""} ${values.split}${ids ? ` (${ids.join(",")})` : ""} · ${cases.length} cases${values.provider ? ` · ${values.provider}` : ""}\n`);
 const results = await pool(cases, Number(values.concurrency), async (c) => {
   const r = await evaluate(c);
   if (!values.json) console.log(line(r));
