@@ -1,0 +1,19 @@
+{
+  "id": "C020",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Extract the correct failure cleanup into the helper.",
+  "labels": {
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported",
+    "checkout.pending/CHK-004": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "        state = { ...state, submitting: false, status: \"failed\", error: \"network_error\" };",
+      "replace": "        state = applyFailure(state, \"network_error\", deps.cart);"
+    }
+  ]
+}

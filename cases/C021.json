@@ -1,0 +1,18 @@
+{
+  "id": "C021",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Replace a nested condition with an equivalent early return.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/loader.ts",
+      "find": "    if (requestId === generation) {\n      state = { query, items: page.items, pageCount: page.pageCount, loading: false };\n    }",
+      "replace": "    if (requestId !== generation) {\n      return;\n    }\n    state = { query, items: page.items, pageCount: page.pageCount, loading: false };"
+    }
+  ]
+}

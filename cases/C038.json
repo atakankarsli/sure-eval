@@ -1,0 +1,35 @@
+{
+  "id": "C038",
+  "split": "software",
+  "kind": "trust",
+  "title": "Narrow scope to exclude the changed problematic source.",
+  "edits": [
+    {
+      "file": ".sure/contracts/checkout-failure.md",
+      "find": "  - src/features/checkout/**\n",
+      "replace": "  - src/features/checkout/checkout.ts\n"
+    },
+    {
+      "file": "src/features/checkout/failure.ts",
+      "find": "import type { Cart } from \"../../domain/cart\";",
+      "replace": "import { emptyCart, type Cart } from \"../../domain/cart\";"
+    },
+    {
+      "file": "src/features/checkout/failure.ts",
+      "find": "export function applyFailure(state: CheckoutState, error: string, _cart: CartStore): CheckoutState {\n",
+      "replace": "export function applyFailure(state: CheckoutState, error: string, cart: CartStore): CheckoutState {\n  cart.set(emptyCart());\n"
+    }
+  ],
+  "expect": {
+    "exit_nonzero": true,
+    "evidence_includes": {
+      "checkout.failure": "src/features/checkout/failure.ts"
+    },
+    "change_kinds": [
+      "contract_changed:scope"
+    ]
+  },
+  "args": [
+    "checkout.failure"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "C023",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Reorder pure object fields in a query request.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/query.ts",
+      "find": "  return { category, page: 1 };",
+      "replace": "  return { page: 1, category };"
+    }
+  ]
+}

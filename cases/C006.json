@@ -1,0 +1,18 @@
+{
+  "id": "C006",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Retain the old page when changing filters.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "violated",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/query.ts",
+      "find": "  return { category, page: 1 };",
+      "replace": "  return { category, page: query.page };"
+    }
+  ]
+}

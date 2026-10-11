@@ -1,0 +1,18 @@
+{
+  "id": "C005",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Drop the filter when constructing the next-page request.",
+  "labels": {
+    "catalog.query/CAT-001": "violated",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/query.ts",
+      "find": "  return { ...query, page: query.page + 1 };",
+      "replace": "  return { category: null, page: query.page + 1 };"
+    }
+  ]
+}

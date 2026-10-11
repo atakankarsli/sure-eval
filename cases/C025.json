@@ -1,0 +1,18 @@
+{
+  "id": "C025",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Correct a comment without changing executable behavior.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/api.ts",
+      "find": "// Stands in for GET /api/products?<query>: the request carries only the\n// serialized query string.",
+      "replace": "// Stands in for GET /api/products?<query>; the handler sees only the\n// serialized query string, exactly as a real request would."
+    }
+  ]
+}

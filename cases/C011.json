@@ -1,0 +1,18 @@
+{
+  "id": "C011",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Use the client price when constructing a committed order.",
+  "labels": {
+    "orders.validation/ORD-001": "supported",
+    "orders.validation/ORD-002": "violated",
+    "orders.validation/ORD-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "        unitPrice: catalogPrice(line.sku) ?? 0,",
+      "replace": "        unitPrice: line.clientPrice ?? catalogPrice(line.sku) ?? 0,"
+    }
+  ]
+}

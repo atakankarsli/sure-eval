@@ -1,0 +1,18 @@
+{
+  "id": "C033",
+  "split": "software",
+  "kind": "incomplete",
+  "title": "A newly added allowed source file is outside all declared scopes and context.",
+  "edits": [
+    {
+      "file": "src/features/reviews/rating.ts",
+      "create": "export function averageRating(ratings: number[]): number {\n  return ratings.length === 0 ? 0 : ratings.reduce((a, b) => a + b, 0) / ratings.length;\n}\n"
+    }
+  ],
+  "expect": {
+    "exit_code": 3,
+    "unmapped_includes": [
+      "src/features/reviews/rating.ts"
+    ]
+  }
+}

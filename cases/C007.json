@@ -1,0 +1,18 @@
+{
+  "id": "C007",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Remove the request-generation check before updating results.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "violated"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/loader.ts",
+      "find": "    if (requestId === generation) {\n      state = { query, items: page.items, pageCount: page.pageCount, loading: false };\n    }",
+      "replace": "    state = { query, items: page.items, pageCount: page.pageCount, loading: false };"
+    }
+  ]
+}

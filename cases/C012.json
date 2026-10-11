@@ -1,0 +1,23 @@
+{
+  "id": "C012",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Persist an order before completing validation.",
+  "labels": {
+    "orders.validation/ORD-001": "supported",
+    "orders.validation/ORD-002": "supported",
+    "orders.validation/ORD-003": "violated"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "      const validation = validateOrder(request, deps.inventory);\n      if (!validation.ok) {\n        return { ok: false, error: validation.error };\n      }\n",
+      "replace": ""
+    },
+    {
+      "file": "src/server/orderService.ts",
+      "find": "      for (const line of request.lines) {\n        deps.inventory.take(line.sku, line.quantity);\n      }\n      deps.store.add(order);\n      return { ok: true, order };",
+      "replace": "      deps.store.add(order);\n      const validation = validateOrder(request, deps.inventory);\n      if (!validation.ok) {\n        return { ok: false, error: validation.error };\n      }\n      for (const line of request.lines) {\n        deps.inventory.take(line.sku, line.quantity);\n      }\n      return { ok: true, order };"
+    }
+  ]
+}

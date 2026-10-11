@@ -1,0 +1,25 @@
+{
+  "id": "C034",
+  "split": "software",
+  "kind": "incomplete",
+  "title": "A trusted contract's source glob matches no current code.",
+  "edits": [],
+  "expect": {
+    "exit_code": 3,
+    "checks": {
+      "wishlist.save/WISH-001": {
+        "verdict": "unknown",
+        "reason_code": "empty_scope"
+      }
+    }
+  },
+  "args": [
+    "wishlist"
+  ],
+  "baseline_edits": [
+    {
+      "file": ".sure/contracts/wishlist.md",
+      "create": "---\nschema_version: sure.contract/v1\nid: wishlist.save\nseverity: error\nevidence: code\nscope:\n  - src/features/wishlist/**\n---\n# Wishlist\n\n## WISH-001 — Saved items persist\nA saved item stays in the wishlist after the page reloads.\n"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "C003",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Remove failure-path cleanup of submitting state.",
+  "labels": {
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "violated",
+    "checkout.pending/CHK-004": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/checkout/failure.ts",
+      "find": "  return { ...state, submitting: false, status: \"failed\", error };",
+      "replace": "  return { ...state, status: \"failed\", error };"
+    }
+  ]
+}

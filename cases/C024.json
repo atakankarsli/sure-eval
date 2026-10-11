@@ -1,0 +1,21 @@
+{
+  "id": "C024",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Change a nonsemantic local variable name in a cart operation.",
+  "labels": {
+    "cart.lines/CART-001": "supported",
+    "cart.lines/CART-002": "supported",
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/domain/cart.ts",
+      "find": "existing",
+      "replace": "current",
+      "all": true
+    }
+  ]
+}

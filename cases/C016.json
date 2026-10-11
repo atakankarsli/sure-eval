@@ -1,0 +1,18 @@
+{
+  "id": "C016",
+  "split": "holdout",
+  "kind": "violation",
+  "title": "A query serialization helper loses the filter after page one; page code unchanged.",
+  "labels": {
+    "catalog.query/CAT-001": "violated",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/query.ts",
+      "find": "  if (query.category) {",
+      "replace": "  if (query.category && query.page === 1) {"
+    }
+  ]
+}

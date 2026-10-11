@@ -1,0 +1,29 @@
+{
+  "id": "C029",
+  "split": "holdout",
+  "kind": "safe",
+  "title": "Introduce a wrapper that preserves result and error propagation.",
+  "labels": {
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported",
+    "checkout.pending/CHK-004": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "import { orderOf, type Order, type OrderResult, type OrderService } from \"../../domain/orders\";",
+      "replace": "import { orderOf, type Order, type OrderRequest, type OrderResult, type OrderService } from \"../../domain/orders\";"
+    },
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "export function createCheckout(",
+      "replace": "function submitOrder(service: OrderService, request: OrderRequest): Promise<OrderResult> {\n  return service.placeOrder(request);\n}\n\nexport function createCheckout("
+    },
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "        result = await deps.service.placeOrder({",
+      "replace": "        result = await submitOrder(deps.service, {"
+    }
+  ]
+}

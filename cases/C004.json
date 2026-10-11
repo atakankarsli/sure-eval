@@ -1,0 +1,19 @@
+{
+  "id": "C004",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Remove the already-submitting guard.",
+  "labels": {
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported",
+    "checkout.pending/CHK-004": "violated"
+  },
+  "edits": [
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "      if (state.submitting) {\n        return;\n      }\n",
+      "replace": ""
+    }
+  ]
+}

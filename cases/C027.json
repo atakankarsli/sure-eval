@@ -1,0 +1,35 @@
+{
+  "id": "C027",
+  "split": "holdout",
+  "kind": "safe",
+  "title": "Move the cart module, keep a re-export, and accept the new mapping in a new trusted baseline.",
+  "labels": {
+    "cart.lines/CART-001": "supported",
+    "cart.lines/CART-002": "supported",
+    "checkout.failure/CHK-001": "supported",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/domain/cartLines.ts",
+      "create": "export type CartLine = {\n  sku: string;\n  quantity: number;\n};\n\nexport type Cart = {\n  lines: CartLine[];\n};\n\nexport function emptyCart(): Cart {\n  return { lines: [] };\n}\n\nexport function addItem(cart: Cart, sku: string, quantity: number): Cart {\n  const existing = cart.lines.find((line) => line.sku === sku);\n  if (existing) {\n    return {\n      lines: cart.lines.map((line) => (line.sku === sku ? { ...line, quantity: line.quantity + quantity } : line)),\n    };\n  }\n  return { lines: [...cart.lines, { sku, quantity }] };\n}\n\nexport function removeItem(cart: Cart, sku: string): Cart {\n  return { lines: cart.lines.filter((line) => line.sku !== sku) };\n}\n\nexport function itemCount(cart: Cart): number {\n  return cart.lines.reduce((sum, line) => sum + line.quantity, 0);\n}\n"
+    },
+    {
+      "file": "src/domain/cart.ts",
+      "create": "export * from \"./cartLines\";\n"
+    }
+  ],
+  "baseline_edits": [
+    {
+      "file": ".sure/contracts/cart-lines.md",
+      "find": "  - src/domain/cart.ts\n",
+      "replace": "  - src/domain/cart.ts\n  - src/domain/cartLines.ts\n"
+    },
+    {
+      "file": ".sure/contracts/checkout-failure.md",
+      "find": "  - src/domain/cart.ts\n",
+      "replace": "  - src/domain/cart.ts\n  - src/domain/cartLines.ts\n"
+    }
+  ]
+}

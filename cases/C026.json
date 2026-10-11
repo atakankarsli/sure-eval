@@ -1,0 +1,23 @@
+{
+  "id": "C026",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Extract the catalog-price lookup while preserving the data source.",
+  "labels": {
+    "orders.validation/ORD-001": "supported",
+    "orders.validation/ORD-002": "supported",
+    "orders.validation/ORD-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "        unitPrice: catalogPrice(line.sku) ?? 0,",
+      "replace": "        unitPrice: unitPriceFor(line.sku),"
+    },
+    {
+      "file": "src/server/orderService.ts",
+      "find": "export function createOrderService(",
+      "replace": "function unitPriceFor(sku: string): number {\n  return catalogPrice(sku) ?? 0;\n}\n\nexport function createOrderService("
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "C039",
+  "split": "software",
+  "kind": "trust",
+  "title": "Lower severity and the decision threshold in the candidate.",
+  "edits": [
+    {
+      "file": ".sure/contracts/checkout-failure.md",
+      "find": "severity: error",
+      "replace": "severity: warning"
+    },
+    {
+      "file": ".sure/config.yaml",
+      "find": "  min_selected_probability: 0.90",
+      "replace": "  min_selected_probability: 0.50"
+    },
+    {
+      "file": "src/features/checkout/checkout.ts",
+      "find": "      if (!result.ok) {\n        state = applyFailure(",
+      "replace": "      if (!result.ok) {\n        deps.cart.set(emptyCart());\n        state = applyFailure("
+    }
+  ],
+  "expect": {
+    "exit_nonzero": true,
+    "severity": {
+      "checkout.failure/CHK-001": "error"
+    },
+    "min_probability": 0.9,
+    "change_kinds": [
+      "contract_changed:severity",
+      "config_changed:policy.min_selected_probability"
+    ]
+  },
+  "args": [
+    "checkout.failure"
+  ]
+}

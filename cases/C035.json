@@ -1,0 +1,34 @@
+{
+  "id": "C035",
+  "split": "software",
+  "kind": "incomplete",
+  "title": "A visual contract has a current artifact, but the provider cannot judge images.",
+  "edits": [],
+  "expect": {
+    "exit_code": 3,
+    "checks": {
+      "home.look/VIS-001": {
+        "verdict": "unknown",
+        "reason_code": "unsupported_evidence_kind"
+      }
+    }
+  },
+  "args": [
+    "home.look"
+  ],
+  "baseline_edits": [
+    {
+      "file": ".sure/contracts/home-look.md",
+      "create": "---\nschema_version: sure.contract/v1\nid: home.look\nseverity: error\nevidence: image\nscope:\n  - src/features/catalog/**\n---\n# Home look\n\n## VIS-001 — Readable product grid\nThe product grid shows three cards per row with prices at least 18 points tall.\n"
+    },
+    {
+      "file": ".sure/config.yaml",
+      "find": "policy:\n",
+      "replace": "visual:\n  manifest: .sure/visual/manifest.json\npolicy:\n"
+    }
+  ],
+  "visual": {
+    "check": "home.look/VIS-001",
+    "stale": false
+  }
+}

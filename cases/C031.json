@@ -1,0 +1,25 @@
+{
+  "id": "C031",
+  "split": "software",
+  "kind": "incomplete",
+  "title": "A required explicit dependency file is unavailable.",
+  "edits": [
+    {
+      "file": "src/domain/orders.ts",
+      "delete": true
+    }
+  ],
+  "expect": {
+    "exit_code": 3,
+    "checks": {
+      "checkout.failure/CHK-001": {
+        "verdict": "unknown",
+        "reason_code": "missing_context"
+      },
+      "orders.validation/ORD-001": {
+        "verdict": "unknown",
+        "reason_code": "missing_context"
+      }
+    }
+  }
+}

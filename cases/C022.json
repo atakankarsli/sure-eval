@@ -1,0 +1,23 @@
+{
+  "id": "C022",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Add an explicit return type to the order result.",
+  "labels": {
+    "orders.validation/ORD-001": "supported",
+    "orders.validation/ORD-002": "supported",
+    "orders.validation/ORD-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "import type { Order, OrderRequest, OrderService } from \"../domain/orders\";",
+      "replace": "import type { Order, OrderRequest, OrderResult, OrderService } from \"../domain/orders\";"
+    },
+    {
+      "file": "src/server/orderService.ts",
+      "find": "    async placeOrder(request) {",
+      "replace": "    async placeOrder(request: OrderRequest): Promise<OrderResult> {"
+    }
+  ]
+}

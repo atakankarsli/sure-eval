@@ -1,0 +1,23 @@
+{
+  "id": "C010",
+  "split": "dev",
+  "kind": "violation",
+  "title": "Mutate inventory before the insufficient-stock rejection path.",
+  "labels": {
+    "orders.validation/ORD-001": "violated",
+    "orders.validation/ORD-002": "supported",
+    "orders.validation/ORD-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "      return { ok: false, error: `insufficient_stock:${line.sku}` };\n    }\n  }",
+      "replace": "      return { ok: false, error: `insufficient_stock:${line.sku}` };\n    }\n    inventory.take(line.sku, line.quantity);\n  }"
+    },
+    {
+      "file": "src/server/orderService.ts",
+      "find": "      for (const line of request.lines) {\n        deps.inventory.take(line.sku, line.quantity);\n      }\n",
+      "replace": ""
+    }
+  ]
+}

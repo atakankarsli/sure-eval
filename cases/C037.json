@@ -1,0 +1,25 @@
+{
+  "id": "C037",
+  "split": "software",
+  "kind": "trust",
+  "title": "Delete a check from the candidate contract file.",
+  "edits": [
+    {
+      "file": ".sure/contracts/cart-lines.md",
+      "find": "\n## CART-002 — Adding increments\nAdding a SKU that is already in the cart increases its quantity by the\nadded amount instead of replacing it.\n",
+      "replace": ""
+    }
+  ],
+  "expect": {
+    "exit_nonzero": true,
+    "check_present": [
+      "cart.lines/CART-002"
+    ],
+    "change_kinds": [
+      "check_removed"
+    ]
+  },
+  "args": [
+    "cart.lines"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "C019",
+  "split": "dev",
+  "kind": "safe",
+  "title": "Rename private identifiers without changing behavior.",
+  "labels": {
+    "catalog.query/CAT-001": "supported",
+    "catalog.query/CAT-002": "supported",
+    "catalog.query/CAT-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/catalog/loader.ts",
+      "find": "generation",
+      "replace": "latestRequest",
+      "all": true
+    },
+    {
+      "file": "src/features/catalog/loader.ts",
+      "find": "requestId",
+      "replace": "ticket",
+      "all": true
+    }
+  ]
+}

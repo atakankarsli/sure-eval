@@ -1,0 +1,18 @@
+{
+  "id": "C017",
+  "split": "holdout",
+  "kind": "violation",
+  "title": "Check stock only for the first cart line.",
+  "labels": {
+    "orders.validation/ORD-001": "violated",
+    "orders.validation/ORD-002": "supported",
+    "orders.validation/ORD-003": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/server/orderService.ts",
+      "find": "    if (inventory.available(line.sku) < line.quantity) {",
+      "replace": "    if (line === request.lines[0] && inventory.available(line.sku) < line.quantity) {"
+    }
+  ]
+}

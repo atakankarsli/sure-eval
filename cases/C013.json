@@ -1,0 +1,24 @@
+{
+  "id": "C013",
+  "split": "holdout",
+  "kind": "violation",
+  "title": "A separately referenced failure helper now clears the cart; caller unchanged.",
+  "labels": {
+    "checkout.failure/CHK-001": "violated",
+    "checkout.failure/CHK-002": "supported",
+    "checkout.failure/CHK-003": "supported",
+    "checkout.pending/CHK-004": "supported"
+  },
+  "edits": [
+    {
+      "file": "src/features/checkout/failure.ts",
+      "find": "import type { Cart } from \"../../domain/cart\";",
+      "replace": "import { emptyCart, type Cart } from \"../../domain/cart\";"
+    },
+    {
+      "file": "src/features/checkout/failure.ts",
+      "find": "export function applyFailure(state: CheckoutState, error: string, _cart: CartStore): CheckoutState {\n",
+      "replace": "export function applyFailure(state: CheckoutState, error: string, cart: CartStore): CheckoutState {\n  cart.set(emptyCart());\n"
+    }
+  ]
+}

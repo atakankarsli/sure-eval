@@ -1,0 +1,15 @@
+schema_version: sure.config/v1
+contracts: .sure/contracts
+source_roots:
+  - src
+exclude:
+  - "**/*.test.*"
+provider:
+  name: anthropic
+  effort: low
+limits:
+  concurrency: 6
+policy:
+  version: experimental-v1
+  min_selected_probability: 0.90
+  min_probability_margin: 0.20

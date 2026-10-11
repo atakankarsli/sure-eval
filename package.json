@@ -1,0 +1,18 @@
+{
+  "name": "sure-eval",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "eval": "node harness/eval.ts",
+    "validate": "node harness/validate.ts",
+    "oracle": "vitest run --config vitest.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2",
+    "vitest": "5.0.2"
+  }
+}
