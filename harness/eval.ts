@@ -42,9 +42,13 @@ const requirements: Record<string, string> = {};
 for (const f of readdirSync(join(APP, ".sure", "contracts"))) {
   const text = readFileSync(join(APP, ".sure", "contracts", f), "utf8");
   const id = /^id: (\S+)$/m.exec(text)?.[1];
-  for (const m of text.matchAll(/^## (\S+) — .*\n([\s\S]*?)(?=\n## |$)/gm)) {
-    requirements[`${id}/${m[1]}`] = m[2].trim().replace(/\s+/g, " ");
+  for (const section of text.split(/\n(?=## )/)) {
+    const m = /^## (\S+) — [^\n]*\n([\s\S]*)$/.exec(section);
+    if (m) requirements[`${id}/${m[1]}`] = m[2].trim().replace(/\s+/g, " ");
   }
+}
+for (const [id, text] of Object.entries(requirements)) {
+  if (!/[.!?]$/.test(text)) throw new Error(`requirement ${id} was not read completely: "${text}"`);
 }
 const contractFiles = readdirSync(join(APP, ".sure", "contracts")).map((f) => ({ file: `.sure/contracts/${f}`, delete: true as const }));
 const cases = loadCases((c) => (ids ? ids.includes(c.id) : values.split === "all" || c.split === values.split));
