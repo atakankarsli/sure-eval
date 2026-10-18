@@ -125,6 +125,7 @@ async function evaluate(c: Case): Promise<CaseResult> {
     }
     if (values.provider) args.push("--provider", values.provider);
     if (values["no-cache"]) args.push("--no-cache");
+    if (process.env.SURE_EXTRA_ARGS) args.push(...process.env.SURE_EXTRA_ARGS.split(/\s+/).filter(Boolean));
     const sure = await runSure(dir, args);
     result.exit = sure.exitCode;
     result.ms = sure.ms;

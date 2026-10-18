@@ -17,6 +17,7 @@ npm run eval -- --provider jev --split all       # dev | holdout | software | al
 npm run eval -- --provider jev --case C003,C015  # specific cases
 npm run eval -- --provider jev --adhoc           # ad-hoc track (see below)
 npm run eval -- --oracle                         # also rerun the oracle on every candidate
+SURE_EXTRA_ARGS="--long-context" npm run eval -- --provider jev   # pass extra flags to every Sure call
 ```
 
 Each run writes `results/<timestamp>/`: `summary.json` (track, split, provider, models, counts, rates, timings), `results.jsonl` (one line per case), and `raw/<case>.json` (Sure's full output). `results/` is not committed.
@@ -58,6 +59,8 @@ Outcomes per labeled check:
 | software (incomplete + trust) | either | — | — | 27/27 assertions | — | under 7 s |
 
 Jev's wrong clears are the CHK-003 mutants (C003, C015): a removed `submitting: false` that object spread keeps `true`, across two files. Jev catches it when the question names the path and the incoming value. Details are in `../sure/docs/PLAN.md`.
+
+2026-10-18: the Jev contracts row reproduced exactly (13/18, 2, 88/95, 0). With Jev's long-context header on the same evidence: 13/18, 2, 87/95. With every contract reading the whole app (`src/**`): 12/18, 1–2 wrongly cleared, one new confident miss (C016). Checks phrased as concrete facts, asked outside the harness on 8 violation and 5 safe cases: 15/18 caught, 0 wrongly cleared, 0 false alarms. Those probes touched holdout cases C014–C017; a fresh holdout is needed before the facts design is scored. Write-ups: `../sure/docs/research/jev-long-context.md` and `decisive-questions.md`.
 
 ## Adding a case
 
